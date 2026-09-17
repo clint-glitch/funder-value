@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Construction Margin Calculator — Paid</title>
+<meta name="description" content="See what your construction facility earns once every dollar is accounted for. Model your own facility size, rate and terms.">
+<meta property="og:title" content="Construction Margin Calculator — Paid">
+<meta property="og:description" content="Same loan. Same rate. See what changes when the cash between drawdown and disbursement is finally accounted for.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%2334D399'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050505;
+    --bg-elevated: #0B0C0A;
+    --ink: #F4F3EF;
+    --ink-dim: #9C9C96;
+    --ink-faint: #64645E;
+    --line: #1D1D1A;
+    --line-strong: #2B2B27;
+    --accent: #38D9A0;
+    --accent-dim: #1F7A5C;
+    --accent-wash: #0D1912;
+    --track: #1A1A17;
+    --shadow-color: rgba(0,0,0,0.45);
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #FAFAF7; --bg-elevated: #FFFFFF; --ink: #16160F; --ink-dim: #5A5A52; --ink-faint: #8F8F85;
+      --line: #E7E6DD; --line-strong: #D6D5C9; --accent: #0F9D6A; --accent-dim: #0B7350; --accent-wash: #E7F6EE;
+      --track: #ECEBE3; --shadow-color: rgba(20,20,10,0.08);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.5; font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 32px) 90px; }
+
+  .site-header { border-bottom: 1px solid var(--line); }
+  .site-header-inner {
+    max-width: 1180px; margin: 0 auto; padding: 18px clamp(16px, 4vw, 32px);
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .wordmark { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-style: italic; font-size: 1.3rem; color: var(--ink); }
+  .site-tagline { font-size: 0.8rem; color: var(--ink-faint); font-style: italic; }
+  @media (max-width: 520px) { .site-tagline { display: none; } }
+
+  h1, h2 { font-family: 'Playfair Display', Georgia, serif; font-weight: 600; margin: 0; color: var(--ink); letter-spacing: -0.01em; }
+  h1 { font-size: clamp(1.8rem, 3.8vw, 2.4rem); line-height: 1.15; }
+  h2 { font-size: 1.02rem; margin-bottom: 3px; }
+  .kicker { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--accent); letter-spacing: 0.06em; margin-bottom: 12px; }
+  .lede { color: var(--ink-dim); font-size: 0.99rem; max-width: 60ch; margin: 12px 0 0; line-height: 1.6; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 34px; }
+
+  .layout { display: grid; grid-template-columns: 1fr 1.05fr; gap: 24px; align-items: start; }
+  @media (max-width: 880px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--bg-elevated); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 20px 22px; box-shadow: 0 1px 2px var(--shadow-color), 0 12px 28px -18px var(--shadow-color);
+    transition: border-color 0.2s var(--ease);
+  }
+  .panel + .panel { margin-top: 14px; }
+  .panel-head {
+    display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none;
+  }
+  .panel-icon {
+    width: 34px; height: 34px; border-radius: 9px; background: var(--accent-wash);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    color: var(--accent);
+  }
+  .panel-head-text { flex: 1; min-width: 0; }
+  .panel-head h2 { margin: 0; }
+  .panel-head .hint { font-size: 0.77rem; color: var(--ink-faint); font-weight: 400; margin-top: 2px; }
+  .chev { color: var(--ink-faint); transition: transform 0.3s var(--ease); font-size: 0.85rem; flex-shrink: 0; }
+  .panel.collapsed .chev { transform: rotate(-90deg); }
+  .panel-divider { height: 1px; background: var(--line); margin: 16px 0; transition: margin 0.3s var(--ease); }
+  .panel.collapsed .panel-divider { margin: 0; height: 0; overflow: hidden; }
+  .panel-body { overflow: hidden; max-height: 0; transition: max-height 0.35s var(--ease); }
+
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 4px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.86rem; color: var(--ink); margin-bottom: 9px; }
+  .field label .val { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 0.86rem; font-weight: 600; }
+  .field .note { font-size: 0.75rem; color: var(--ink-faint); margin-top: 7px; line-height: 1.45; }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: 3px; outline: none;
+    background: var(--track); cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%; background: var(--accent);
+    cursor: grab; border: 3px solid var(--bg-elevated); box-shadow: 0 0 0 1px var(--accent), 0 2px 8px var(--shadow-color);
+    transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease); margin-top: -1px;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type=range]::-webkit-slider-thumb:active { cursor: grabbing; box-shadow: 0 0 0 5px var(--accent-wash), 0 2px 8px var(--shadow-color); }
+  input[type=range]::-moz-range-thumb {
+    width: 17px; height: 17px; border-radius: 50%; background: var(--accent); cursor: grab;
+    border: 3px solid var(--bg-elevated); box-shadow: 0 0 0 1px var(--accent);
+  }
+  input[type=range]:focus-visible { box-shadow: 0 0 0 3px var(--accent-wash); border-radius: 3px; }
+
+  input[type=text].money-input {
+    width: 100%; background: var(--track); border: 1px solid var(--line); border-radius: 8px;
+    color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 600;
+    padding: 9px 12px; transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  }
+  input[type=text].money-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash); }
+
+  .segmented {
+    position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    background: var(--track); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 4px;
+  }
+  .segmented-thumb {
+    position: absolute; top: 4px; left: 4px; height: calc(100% - 8px);
+    background: var(--accent-wash); border: 1px solid var(--accent); border-radius: 7px;
+    transition: left 0.3s var(--ease), width 0.3s var(--ease); z-index: 0;
+  }
+  .segmented-option {
+    position: relative; z-index: 1; border: none; background: transparent; cursor: pointer;
+    padding: 11px 8px; text-align: center; font-family: 'Inter', sans-serif; color: var(--ink-dim);
+    transition: color 0.2s var(--ease); border-radius: 7px;
+  }
+  .segmented-option .pct { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; font-weight: 600; margin-bottom: 2px; color: inherit; }
+  .segmented-option.active { color: var(--ink); }
+  .segmented-option.active .pct { color: var(--accent); }
+
+  .results { position: sticky; top: 20px; }
+  .headline {
+    background: linear-gradient(160deg, var(--accent-wash) 0%, var(--bg-elevated) 78%);
+    border: 1px solid var(--accent); border-radius: var(--radius-lg);
+    padding: 26px 28px; margin-bottom: 16px; position: relative; overflow: hidden;
+    box-shadow: 0 1px 2px var(--shadow-color), 0 16px 32px -20px var(--shadow-color);
+  }
+  .headline .label { font-size: 0.76rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; font-weight: 600; }
+  .headline .num {
+    font-family: 'JetBrains Mono', monospace; font-size: clamp(2.1rem, 5vw, 2.8rem); font-weight: 600; color: var(--accent);
+    line-height: 1; transition: opacity 0.15s var(--ease);
+  }
+  .headline .sub { font-size: 0.86rem; color: var(--ink-dim); margin-top: 10px; }
+
+  .breakdown {
+    background: var(--bg-elevated); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 20px 24px; box-shadow: 0 1px 2px var(--shadow-color), 0 12px 28px -18px var(--shadow-color);
+  }
+  .bd-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+  .bd-row:last-child { border-bottom: none; }
+  .bd-row .name { color: var(--ink); }
+  .bd-row .amt { font-family: 'JetBrains Mono', monospace; color: var(--ink); font-weight: 500; transition: opacity 0.15s var(--ease); }
+  .bd-row.total { padding-top: 14px; margin-top: 4px; border-top: 1px solid var(--line-strong); border-bottom: none; }
+  .bd-row.total .name, .bd-row.total .amt { color: var(--accent); font-weight: 600; font-size: 0.95rem; }
+  .bd-row.sub { padding: 8px 0; border-bottom: 1px dashed var(--line); }
+  .bd-row.sub .name { color: var(--ink-dim); font-size: 0.83rem; padding-left: 18px; position: relative; }
+  .bd-row.sub .name::before { content: ""; position: absolute; left: 4px; top: 50%; width: 6px; height: 1px; background: var(--line-strong); }
+  .bd-row.sub .amt { color: var(--ink-dim); font-size: 0.83rem; font-weight: 400; }
+
+  .bucket-label { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .bucket-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px currentColor; }
+  .bucket-dot.b1 { background: var(--accent); color: var(--accent-wash); }
+  .bucket-dot.b2 { background: var(--ink-faint); color: transparent; }
+  .bucket-title { font-size: 0.96rem; font-weight: 600; color: var(--ink); flex: 1; }
+  .bucket-amt { font-family: 'JetBrains Mono', monospace; color: var(--ink); font-size: 0.96rem; font-weight: 600; }
+  .bucket-note { font-size: 0.79rem; color: var(--ink-dim); line-height: 1.45; margin-bottom: 10px; padding-left: 19px; }
+
+  .paid-note { font-size: 0.76rem; color: var(--ink-faint); margin-top: 12px; line-height: 1.5; }
+  .paid-note span { font-family: 'JetBrains Mono', monospace; }
+
+  .reset-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-elevated); border: 1px solid var(--line); color: var(--ink-dim);
+    border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+  }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .reset-btn svg { transition: transform 0.4s var(--ease); }
+  .reset-btn:active svg { transform: rotate(-180deg); }
+
+  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-faint); }
+
+  ::selection { background: var(--accent-dim); color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <span class="wordmark">Paid</span>
+    <span class="site-tagline">If it's agreed, it's Paid.</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <div class="kicker">CONSTRUCTION MARGIN CALCULATOR</div>
+      <h1>What this is worth on your book.</h1>
+      <p class="lede">Every number below is editable. Start with your own facility size, rate and project length, then adjust any assumption to match how your book actually works.</p>
+    </div>
+    <button class="reset-btn" onclick="resetDefaults()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      Reset to defaults
+    </button>
+  </div>
+
+  <div class="layout">
+    <div class="inputs">
+
+      <div class="panel" id="panel-core">
+        <div class="panel-head" onclick="toggle('panel-core')">
+          <div class="panel-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></div>
+          <div class="panel-head-text"><h2>Your facility</h2><div class="hint">The headline inputs</div></div>
+          <span class="chev">&#9660;</span>
+        </div>
+        <div class="panel-divider"></div>
+        <div class="panel-body">
+          <div class="field">
+            <label>Total facility / project value <span class="val" id="out-value">$10,000,000</span></label>
+            <input type="range" id="in-value" min="1000000" max="2000000000" step="1000000" value="10000000" oninput="onValueRangeInput()">
+            <input type="text" inputmode="numeric" class="money-input" id="in-value-num" value="10,000,000" oninput="onValueTextInput()" style="margin-top:10px;">
+            <div class="note">Slider runs to $2bn &mdash; type any amount above it for a larger or more precise figure.</div>
+          </div>
+          <div class="field">
+            <label>Average interest rate <span class="val" id="out-rate">11.0%</span></label>
+            <input type="range" id="in-rate" min="4" max="20" step="0.1" value="11" oninput="syncNum('rate')">
+          </div>
+          <div class="field">
+            <label>Project length (months) <span class="val" id="out-months">12</span></label>
+            <input type="range" id="in-months" min="3" max="36" step="1" value="12" oninput="syncNum('months')">
+          </div>
+          <div class="field">
+            <label>Revenue share tier</label>
+            <div class="segmented" id="tier-segmented">
+              <div class="segmented-thumb" id="tier-thumb"></div>
+              <button class="segmented-option active" data-tier="0.2" onclick="setTier(0.2, this)"><span class="pct">20%</span>Standard</button>
+              <button class="segmented-option" data-tier="0.5" onclick="setTier(0.5, this)"><span class="pct">50%</span>Founding Partner</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel collapsed" id="panel-claims">
+        <div class="panel-head" onclick="toggle('panel-claims')">
+          <div class="panel-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <div class="panel-head-text"><h2>Progress claims &amp; early release</h2><div class="hint">Advanced &mdash; defaults reflect a standard national SOP Act cycle</div></div>
+          <span class="chev">&#9660;</span>
+        </div>
+        <div class="panel-divider"></div>
+        <div class="panel-body">
+          <div class="field">
+            <label>Number of progress claims across program <span class="val" id="out-nclaims">12</span></label>
+            <input type="range" id="in-nclaims" min="1" max="36" step="1" value="12" oninput="syncNum('nclaims')">
+          </div>
+          <div class="field">
+            <label>PTA / trust deposit rate <span class="val" id="out-ptarate">4.5%</span></label>
+            <input type="range" id="in-ptarate" min="1" max="10" step="0.1" value="4.5" oninput="syncNum('ptarate')">
+          </div>
+          <div class="field">
+            <label>SOP Act standard payment period (days) <span class="val" id="out-sopdays">21</span></label>
+            <input type="range" id="in-sopdays" min="10" max="45" step="1" value="21" oninput="syncNum('sopdays')">
+          </div>
+          <div class="field">
+            <label>Early release uptake <span class="val" id="out-earlypct">40%</span></label>
+            <input type="range" id="in-earlypct" min="0" max="100" step="1" value="40" oninput="syncNum('earlypct')">
+          </div>
+          <div class="field">
+            <label>Avg day early release requested <span class="val" id="out-earlyday">7</span></label>
+            <input type="range" id="in-earlyday" min="1" max="30" step="1" value="7" oninput="syncNum('earlyday')">
+          </div>
+          <div class="field">
+            <label>Early release fee (%/day) <span class="val" id="out-feerate">0.070%</span></label>
+            <input type="range" id="in-feerate" min="0.01" max="0.20" step="0.005" value="0.07" oninput="syncNum('feerate')">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel collapsed" id="panel-retention">
+        <div class="panel-head" onclick="toggle('panel-retention')">
+          <div class="panel-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6z"/></svg></div>
+          <div class="panel-head-text"><h2>Retention</h2><div class="hint">Advanced &mdash; both layers of the payment chain</div></div>
+          <span class="chev">&#9660;</span>
+        </div>
+        <div class="panel-divider"></div>
+        <div class="panel-body">
+          <div class="field">
+            <label>Retention rate <span class="val" id="out-retrate">5.0%</span></label>
+            <input type="range" id="in-retrate" min="0" max="15" step="0.5" value="5" oninput="syncNum('retrate')">
+          </div>
+          <div class="field">
+            <label>Released at Practical Completion <span class="val" id="out-retsplit">50%</span></label>
+            <input type="range" id="in-retsplit" min="0" max="100" step="5" value="50" oninput="syncNum('retsplit')">
+            <div class="note">Remainder releases at the end of the defects liability period.</div>
+          </div>
+          <div class="field">
+            <label>Defects liability period (days after PC) <span class="val" id="out-dlpdays">365</span></label>
+            <input type="range" id="in-dlpdays" min="0" max="730" step="5" value="365" oninput="syncNum('dlpdays')">
+          </div>
+          <div class="field">
+            <label>Builder-level retention base <span class="val" id="out-builderbase">87%</span></label>
+            <input type="range" id="in-builderbase" min="0" max="100" step="1" value="87" oninput="syncNum('builderbase')">
+            <div class="note">Share of contract value actually subcontracted &mdash; excludes prelims, contingency and other direct costs. Set to 0% if builder-level payments aren't processed on the platform.</div>
+          </div>
+          <div class="field">
+            <label>Retention early-release uptake <span class="val" id="out-retearlypct">25%</span></label>
+            <input type="range" id="in-retearlypct" min="0" max="100" step="1" value="25" oninput="syncNum('retearlypct')">
+          </div>
+          <div class="field">
+            <label>Avg days accelerated (retention) <span class="val" id="out-retacceldays">150</span></label>
+            <input type="range" id="in-retacceldays" min="0" max="400" step="5" value="150" oninput="syncNum('retacceldays')">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel collapsed" id="panel-timing">
+        <div class="panel-head" onclick="toggle('panel-timing')">
+          <div class="panel-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/><path d="M8 14l2.5 2.5L16 11"/></svg></div>
+          <div class="panel-head-text"><h2>Draw timing &amp; fees</h2><div class="hint">Advanced</div></div>
+          <span class="chev">&#9660;</span>
+        </div>
+        <div class="panel-divider"></div>
+        <div class="panel-body">
+          <div class="field">
+            <label>Trade &amp; supply share of monthly draw <span class="val" id="out-tradeshare">80%</span></label>
+            <input type="range" id="in-tradeshare" min="0" max="100" step="1" value="80" oninput="syncNum('tradeshare')">
+          </div>
+          <div class="field">
+            <label>Mid-month cost accrual (days) <span class="val" id="out-accrualdays">15</span></label>
+            <input type="range" id="in-accrualdays" min="0" max="30" step="1" value="15" oninput="syncNum('accrualdays')">
+          </div>
+          <div class="field">
+            <label>Payment Security fee (% of claim value) <span class="val" id="out-psgrate">0.30%</span></label>
+            <input type="range" id="in-psgrate" min="0" max="1" step="0.05" value="0.3" oninput="syncNum('psgrate')">
+            <div class="note">Memo only &mdash; flat, trade-paid, not part of the shared pool.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="results">
+      <div class="headline">
+        <div class="label">Your total value created, per year</div>
+        <div class="num" id="r-grandtotal">$0</div>
+        <div class="sub" id="r-bps">0.0% of facility value</div>
+      </div>
+
+      <div class="breakdown" style="margin-bottom:14px;">
+        <div class="bucket-label">
+          <span class="bucket-dot b1"></span>
+          <span class="bucket-title">Platform yield (your share)</span>
+          <span class="bucket-amt" id="r-bucket1">$0</span>
+        </div>
+        <div class="bucket-note">Held in trust exactly as long as it needs to be, then released &mdash; the timing itself earns yield. Your share, at your tier.</div>
+        <div class="bd-row sub"><span class="name">Progress claim float + early release fee</span><span class="amt" id="r-claims">$0</span></div>
+        <div class="bd-row sub"><span class="name">Retention yield, both layers</span><span class="amt" id="r-retention">$0</span></div>
+
+        <div class="bucket-label" style="margin-top:18px;">
+          <span class="bucket-dot b2"></span>
+          <span class="bucket-title">Pay-as-you-go interest</span>
+          <span class="bucket-amt" id="r-bucket2">$0</span>
+        </div>
+        <div class="bucket-note">Your facility draws down in step with when trades are actually paid, not on a monthly cycle &mdash; more interest days, on your own book. 100% yours, no split.</div>
+      </div>
+
+      <div class="breakdown">
+        <div class="bd-row total"><span class="name">Your total value created</span><span class="amt" id="r-total2">$0</span></div>
+        <div class="paid-note">A share of platform yield, plus a small payment security fee, funds the platform running this &mdash; <span id="r-paidshare">$0</span>, not part of your number above.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Paid Dot Pty Ltd &middot; AFSL NCP 700215 &middot; AFCA 120784 &mdash; illustrative model, not a formal quote.</footer>
+</div>
+
+<script>
+const defaults = {
+  value: 10000000, rate: 11, months: 12,
+  nclaims: 12, ptarate: 4.5, sopdays: 21, earlypct: 40, earlyday: 7, feerate: 0.07,
+  retrate: 5, retsplit: 50, dlpdays: 365, builderbase: 87, retearlypct: 25, retacceldays: 150,
+  tradeshare: 80, accrualdays: 15, psgrate: 0.3
+};
+let tier = 0.2;
+
+function toggle(id) {
+  const panel = document.getElementById(id);
+  const body = panel.querySelector('.panel-body');
+  const collapsing = !panel.classList.contains('collapsed');
+  if (collapsing) {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    requestAnimationFrame(() => { panel.classList.add('collapsed'); body.style.maxHeight = '0px'; });
+  } else {
+    panel.classList.remove('collapsed');
+    body.style.maxHeight = body.scrollHeight + 'px';
+    setTimeout(() => { if (!panel.classList.contains('collapsed')) body.style.maxHeight = 'none'; }, 360);
+  }
+}
+
+function moveThumb() {
+  const active = document.querySelector('.segmented-option.active');
+  const thumb = document.getElementById('tier-thumb');
+  if (!active || !thumb) return;
+  thumb.style.left = active.offsetLeft + 'px';
+  thumb.style.width = active.offsetWidth + 'px';
+}
+
+function setTier(t, el) {
+  document.querySelectorAll('.segmented-option').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  tier = t;
+  moveThumb();
+  calculate();
+}
+
+function syncNum(key) {
+  const range = document.getElementById('in-' + key);
+  const numEl = document.getElementById('in-' + key + '-num');
+  if (numEl) numEl.value = range.value;
+  calculate();
+}
+
+function onValueRangeInput() {
+  const range = document.getElementById('in-value');
+  document.getElementById('in-value-num').value = Math.round(parseFloat(range.value)).toLocaleString('en-US');
+  calculate();
+}
+
+function onValueTextInput() {
+  const el = document.getElementById('in-value-num');
+  const caretFromEnd = el.value.length - (el.selectionStart || el.value.length);
+  const digits = el.value.replace(/[^0-9]/g, '');
+  const num = digits ? parseInt(digits, 10) : 0;
+  el.value = num.toLocaleString('en-US');
+  const newPos = Math.max(0, el.value.length - caretFromEnd);
+  if (document.activeElement === el) el.setSelectionRange(newPos, newPos);
+  const range = document.getElementById('in-value');
+  range.value = Math.min(Math.max(num, parseFloat(range.min)), parseFloat(range.max));
+  calculate();
+}
+
+function getFacilityValue() {
+  const raw = document.getElementById('in-value-num').value.replace(/[^0-9]/g, '');
+  return raw ? parseInt(raw, 10) : 0;
+}
+
+function resetDefaults() {
+  Object.keys(defaults).forEach(k => {
+    const el = document.getElementById('in-' + k);
+    if (el) el.value = defaults[k];
+    const numEl = document.getElementById('in-' + k + '-num');
+    if (numEl) numEl.value = defaults[k];
+  });
+  document.getElementById('in-value-num').value = defaults.value.toLocaleString('en-US');
+  document.querySelectorAll('.segmented-option').forEach(b => b.classList.remove('active'));
+  document.querySelector('.segmented-option[data-tier="0.2"]').classList.add('active');
+  tier = 0.2;
+  moveThumb();
+  calculate();
+}
+
+function fmtCurrency(n) {
+  if (!isFinite(n)) n = 0;
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+function fmtCurrencyShort(n) {
+  if (!isFinite(n)) n = 0;
+  const abs = Math.abs(n);
+  if (abs >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+  if (abs >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+  if (abs >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  return fmtCurrency(n);
+}
+
+function g(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+function paintRanges() {
+  document.querySelectorAll('input[type=range]').forEach(el => {
+    const min = parseFloat(el.min), max = parseFloat(el.max), val = parseFloat(el.value);
+    const pct = max > min ? ((val - min) / (max - min)) * 100 : 0;
+    el.style.background = `linear-gradient(to right, var(--accent) ${pct}%, var(--track) ${pct}%)`;
+  });
+}
+
+function pulse(el) {
+  el.style.opacity = '0.35';
+  requestAnimationFrame(() => { el.style.opacity = '1'; });
+}
+
+function calculate() {
+  paintRanges();
+  const value = getFacilityValue();
+  const rate = g('in-rate') / 100;
+  const months = g('in-months');
+  const nclaims = Math.max(1, g('in-nclaims'));
+  const ptarate = g('in-ptarate') / 100;
+  const sopdays = g('in-sopdays');
+  const earlypct = g('in-earlypct') / 100;
+  const earlyday = g('in-earlyday');
+  const feerate = g('in-feerate') / 100;
+  const retrate = g('in-retrate') / 100;
+  const retsplit = g('in-retsplit') / 100;
+  const dlpdays = g('in-dlpdays');
+  const builderbase = g('in-builderbase') / 100;
+  const retearlypct = g('in-retearlypct') / 100;
+  const retacceldays = g('in-retacceldays');
+  const tradeshare = g('in-tradeshare') / 100;
+  const accrualdays = g('in-accrualdays');
+  const psgrate = g('in-psgrate') / 100;
+
+  document.getElementById('out-value').textContent = fmtCurrency(value);
+  document.getElementById('out-rate').textContent = rate.toLocaleString('en-US',{style:'percent',minimumFractionDigits:1});
+  document.getElementById('out-months').textContent = months;
+  document.getElementById('out-nclaims').textContent = nclaims;
+  document.getElementById('out-ptarate').textContent = (ptarate*100).toFixed(1) + '%';
+  document.getElementById('out-sopdays').textContent = sopdays;
+  document.getElementById('out-earlypct').textContent = Math.round(earlypct*100) + '%';
+  document.getElementById('out-earlyday').textContent = earlyday;
+  document.getElementById('out-feerate').textContent = (feerate*100).toFixed(3) + '%';
+  document.getElementById('out-retrate').textContent = (retrate*100).toFixed(1) + '%';
+  document.getElementById('out-retsplit').textContent = Math.round(retsplit*100) + '%';
+  document.getElementById('out-dlpdays').textContent = dlpdays;
+  document.getElementById('out-builderbase').textContent = Math.round(builderbase*100) + '%';
+  document.getElementById('out-retearlypct').textContent = Math.round(retearlypct*100) + '%';
+  document.getElementById('out-retacceldays').textContent = retacceldays;
+  document.getElementById('out-tradeshare').textContent = Math.round(tradeshare*100) + '%';
+  document.getElementById('out-accrualdays').textContent = accrualdays;
+  document.getElementById('out-psgrate').textContent = (psgrate*100).toFixed(2) + '%';
+
+  const claimAmount = value / nclaims;
+  const accelDaysClaim = Math.max(0, sopdays - earlyday);
+  const earlyPortion = claimAmount * earlypct;
+  const fullPortion = claimAmount * (1 - earlypct);
+  const floatEarly = earlyPortion * earlyday / 365 * ptarate;
+  const feeIncome = earlyPortion * feerate * accelDaysClaim;
+  const floatFull = fullPortion * sopdays / 365 * ptarate;
+  const perClaim = floatEarly + feeIncome + floatFull;
+  const claimsTotal = perClaim * nclaims;
+
+  const programDays = months * 30;
+  const avgClaimDay = programDays / 2;
+  const devRetPool = value * retrate;
+  const builderRetPool = value * builderbase * retrate;
+  const combinedRetPool = devRetPool + builderRetPool;
+  const t1Pool = combinedRetPool * retsplit;
+  const t2Pool = combinedRetPool * (1 - retsplit);
+  const t1Day = programDays;
+  const t2Day = programDays + dlpdays;
+  const yieldT1 = t1Pool * ptarate * Math.max(0, t1Day - avgClaimDay) / 365;
+  const yieldT2 = t2Pool * ptarate * Math.max(0, t2Day - avgClaimDay) / 365;
+  const fullTermRetYield = yieldT1 + yieldT2;
+  const impliedAvgDays = combinedRetPool > 0 ? (fullTermRetYield / (combinedRetPool * ptarate)) * 365 : 0;
+  const accelPool = combinedRetPool * retearlypct;
+  const noAccelPool = combinedRetPool * (1 - retearlypct);
+  const yieldNoAccel = noAccelPool * ptarate * impliedAvgDays / 365;
+  const yieldAccelPartial = accelPool * ptarate * Math.max(0, impliedAvgDays - retacceldays) / 365;
+  const feeAccel = accelPool * feerate * retacceldays;
+  const retentionTotal = yieldNoAccel + yieldAccelPartial + feeAccel;
+
+  const monthlyDraw = months > 0 ? value / months : 0;
+  const tradeSupplyAmt = monthlyDraw * tradeshare;
+  const nimPerMonth = tradeSupplyAmt * rate * accrualdays / 365;
+  const nimTotal = nimPerMonth * months;
+
+  const poolTotal = claimsTotal + retentionTotal;
+  const yourClaimsShare = claimsTotal * tier;
+  const yourRetentionShare = retentionTotal * tier;
+  const yourPoolShare = poolTotal * tier;
+  const grandTotal = yourPoolShare + nimTotal;
+  const psgTotal = value * psgrate;
+  const paidShare = poolTotal * (1 - tier) + psgTotal;
+
+  [
+    ['r-grandtotal', fmtCurrencyShort(grandTotal)],
+    ['r-claims', fmtCurrency(yourClaimsShare)],
+    ['r-retention', fmtCurrency(yourRetentionShare)],
+    ['r-bucket1', fmtCurrency(yourPoolShare)],
+    ['r-bucket2', fmtCurrency(nimTotal)],
+    ['r-total2', fmtCurrency(grandTotal)],
+    ['r-paidshare', fmtCurrencyShort(paidShare)],
+  ].forEach(([id, text]) => {
+    const el = document.getElementById(id);
+    if (el.textContent !== text) { el.textContent = text; pulse(el); }
+  });
+  document.getElementById('r-bps').textContent = value > 0 ? (grandTotal/value*100).toFixed(2) + '% of facility value' : '';
+}
+
+calculate();
+moveThumb();
+document.querySelectorAll('.panel:not(.collapsed)').forEach(panel => {
+  panel.querySelector('.panel-body').style.maxHeight = 'none';
+});
+window.addEventListener('resize', moveThumb);
+</script>
+</body>
+</html>
